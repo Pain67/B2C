@@ -121,9 +121,8 @@ bool B2C::EvaluateArgs() {
     if (TargetPath.length() == 0) {
         std::filesystem::path P(SourcePath);
         TargetPath = RootDir + P.stem().string();
-        if (is_cpp) { TargetPath += ".cpp"; }
-        else { TargetPath += ".c"; }
     }
+
 
     // if data Set name not provided
     if (DataSetName.length() == 0) {
