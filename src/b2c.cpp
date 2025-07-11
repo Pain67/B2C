@@ -64,17 +64,17 @@ bool B2C::EvaluateArgs() {
             if (Args[X] == "-t") {
                 if ((X+1) < Num) {
                     std::string& REF = Args[X + 1];
-                    if (REF == "c") { is_cpp = false; }
-                    else if (REF == "cpp") { is_cpp = true; }
+                    if (REF == "h") { is_hpp = false; }
+                    else if (REF == "hpp") { is_hpp = true; }
                     else {
-                        std::cout << "Invalid Argument; '-t' expected 'c' or 'cpp' but found [" << REF << "]" << std::endl;
+                        std::cout << "Invalid Argument; '-t' expected 'h' or 'hpp' but found [" << REF << "]" << std::endl;
                         return false;
                     }
                     X++;
                     continue;
                 }
                 else {
-                    std::cout << "Missing required argument; '-t' expects the data type to be specified {c, cpp}" << std::endl;
+                    std::cout << "Missing required argument; '-t' expects the data type to be specified {h, hpp}" << std::endl;
                     return false;
                 }
             }
@@ -143,8 +143,8 @@ bool B2C::EvaluateArgs() {
         DataSetName = SourceFileName;
     }
 
-    if (is_cpp) { TargetPath += ".cpp"; }
-    else { TargetPath += ".c"; }
+    if (is_hpp) { TargetPath += ".hpp"; }
+    else { TargetPath += ".h"; }
 
     return true;
 }
@@ -155,7 +155,7 @@ void B2C::PrintUsage() {
     std::cout << "  <source_file_path> (Required): Full path to the file to be coverted" << std::endl;
     std::cout << "  [options] (Optional): Any of the following options / flags:" << std::endl;
     std::cout << "    -o <target_file_name>: File name for the resulting file. If not specified, it defauls to \"out.extension\" where extension corresponds to the choosen output type (c or cpp)" << std::endl;
-    std::cout << "    -t {c,cpp}: Specifies the out file format. Default: \"c\"" << std::endl;
+    std::cout << "    -t {h,hpp}: Specifies the out file format. Default: \"c\"" << std::endl;
     std::cout << "    -n <name>: Specifies the name of the data array generated from source file. If not specified, defaults to the source file name" << std::endl;
     std::cout << "    -nop: No progress printed, even if source file size above the limit" << std::endl;
     std::cout << "    -p: Progress will be printed even if source file size below the limit" << std::endl;
@@ -167,8 +167,8 @@ void B2C::PrintState() {
     std::cout << std::endl << "Source File: " << SourcePath << std::endl;
     std::cout << "Target File: " << TargetPath << std::endl;
     std::cout << "Data Set Name: " << DataSetName << std::endl;
-    if (is_cpp) { std::cout << "Extension: .CPP" << std::endl; }
-    else { std::cout << "Extension: .C" << std::endl; }
+    if (is_hpp) { std::cout << "Extension: .HPP" << std::endl; }
+    else { std::cout << "Extension: .H" << std::endl; }
 
     float EstSize = (SourceSize * 6) + 700;
     std::string Unit = "byte";
@@ -177,7 +177,10 @@ void B2C::PrintState() {
     if (EstSize > 1000) { EstSize /= 1000; Unit = "GB"; }
 
 
-    std::cout << "Estimated target file size: " << EstSize << " " << Unit << std::endl << std::endl;
+    std::cout << "Estimated target file size: " << EstSize << " " << Unit << std::endl;
+    if (is_Compact) { std::cout << "Compact Mode: TRUE" << std::endl; }
+    else { std::cout << "Compact Mode: FALSE" << std::endl; }
+    std::cout << "Elements Per Row: " << RowSize << std::endl << std::endl;
 }
 
 bool B2C::Generate() {

@@ -25,7 +25,7 @@ protected:
     std::string SourcePath = "";
     std::string TargetPath = "";
     std::string DataSetName = "";
-    bool is_cpp = false;
+    bool is_hpp = false;
     uint64_t SourceSize = 0;
     bool is_NoProgress = false;
     bool is_ForceProgress = false;
