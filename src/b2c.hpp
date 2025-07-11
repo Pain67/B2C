@@ -26,11 +26,12 @@ protected:
     std::string TargetPath = "";
     std::string DataSetName = "";
     bool is_cpp = false;
-    uint8_t ElementPerRow = 8;
     uint64_t SourceSize = 0;
     bool is_NoProgress = false;
     bool is_ForceProgress = false;
     uint64_t ProgressStep = 3000000;
+    bool is_Compact = false;
+    uint32_t RowSize = 8;
 
     std::string OutFileContent = "";
 

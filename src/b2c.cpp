@@ -93,7 +93,6 @@ bool B2C::EvaluateArgs() {
             if (Args[X] == "-ps") {
                 if ((X+1) < Num) {
                     ProgressStep = std::stoi(Args[X + 1]);
-                    std::cout << "PS: " << ProgressStep << std::endl;
                     X++;
                     continue;
                 }
@@ -102,8 +101,23 @@ bool B2C::EvaluateArgs() {
                     return false;
                 }
             }
+            if (Args[X] == "-r") {
+                if ((X+1) < Num) {
+                    RowSize = std::stoi(Args[X + 1]);
+                    X++;
+                    continue;
+                }
+                else {
+                    std::cout << "Missing required argument; '-r' expects a number to be specified" << std::endl;
+                    return false;
+                }
+            }
             if (Args[X] == "-p") {
                 is_ForceProgress = true;
+                continue;
+            }
+            if (Args[X] == "-c") {
+                is_Compact = true;
                 continue;
             }
             if (Args[X] == "-nop") {
@@ -146,6 +160,8 @@ void B2C::PrintUsage() {
     std::cout << "    -nop: No progress printed, even if source file size above the limit" << std::endl;
     std::cout << "    -p: Progress will be printed even if source file size below the limit" << std::endl;
     std::cout << "    -ps <N>: Set the progress printing steps. Print progress status after every N bytes" << std::endl;
+    std::cout << "    -c : Output file will be compact (no spaces or new lines)" << std::endl;
+    std::cout << "    -r <N> : Sets the number of elements in a row (for the data array)" << std::endl;
 }
 void B2C::PrintState() {
     std::cout << std::endl << "Source File: " << SourcePath << std::endl;
@@ -188,7 +204,8 @@ bool B2C::Generate() {
     std::cout << "Wrinting [" << FileSize << "] bytes into array [" << DataSetName << "]...\n" << std::endl;
 
     // Add Header and stuff
-    OutFile << "const char " << DataSetName << "[" << FileSize << "] = {\n\t";
+    OutFile << "const char " << DataSetName << "[" << FileSize << "] = {";
+    if (!is_Compact) { OutFile << std::endl << "\t";}
 
     // process data - If data size bigger then PROGRESS_MIN_SIZE
     // Show a progress bar in std::out
@@ -202,7 +219,10 @@ bool B2C::Generate() {
 
     uint8_t ENum = 0;
     for (uint64_t X = 0; X < FileSize; X++) {
-        if (ENum > 0) { OutFile << ", "; }
+        if (ENum > 0) {
+            OutFile << ",";
+            if (!is_Compact) { OutFile << " "; }
+        }
 
         char C = InFile.get();
         std::string Hex = CharToHex(C);
@@ -215,10 +235,11 @@ bool B2C::Generate() {
         }
 
         OutFile << Hex;
-        if (ENum >= ElementPerRow) {
+        if (ENum >= RowSize) {
             ENum = 0;
 
-            OutFile << ",\n\t";
+            OutFile << ",";
+            if (!is_Compact) { OutFile << std::endl << "\t"; }
         }
         else { ENum++; }
 
@@ -245,7 +266,12 @@ bool B2C::Generate() {
     }
 
     // Add Closing bracket and Array Size
-    OutFile << "\n};\n\nconst size_t " << DataSetName << "_length = " << FileSize << ";";
+    if (is_Compact) {
+        OutFile << "};const size_t " << DataSetName << "_length = " << FileSize << ";";
+    }
+    else {
+        OutFile << "\n};\n\nconst size_t " << DataSetName << "_length = " << FileSize << ";";
+    }
 
     // Done :D
     InFile.close();
