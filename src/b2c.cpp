@@ -241,7 +241,7 @@ bool B2C::Generate() {
         }
     }
 
-    OutFile << "const char " << DataSetName << "[" << FileSize << "] = {";
+    OutFile << "const unsigned char " << DataSetName << "[" << FileSize << "] = {";
     if (!is_Compact) { OutFile << std::endl << "\t";}
 
     // process data - If data size bigger then PROGRESS_MIN_SIZE
