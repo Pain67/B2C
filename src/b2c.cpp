@@ -1,6 +1,7 @@
 #include "b2c.hpp"
 
 #include <chrono>
+#include <cctype>
 
 std::string B2C::CharToHex(uint8_t IN_Value) {
     char High = IN_Value >> 4;
@@ -25,6 +26,16 @@ void B2C::ParseArguments() {
             Args.push_back(Temp);
         }
     }
+}
+std::string B2C::StringToUpperCase(std::string& REF_String) {
+    std::string Result;
+    int Num = REF_String.length();
+    if (Num > 0) {
+        for (int X = 0; X < Num; X++) {
+            Result += std::toupper(REF_String[X]);
+        }
+    }
+    return Result;
 }
 
 bool B2C::EvaluateArgs() {
@@ -124,9 +135,14 @@ bool B2C::EvaluateArgs() {
                 is_NoProgress = true;
                 continue;
             }
+            if (Args[X] == "-g") {
+                is_IncludeGuard = true;
+                continue;
+            }
 
             // if none of them picked up the argument,
             // it is unexpected
+            std::cout << "Unrecognised argument [" << Args[X] << "]." << std::endl;
             return false;
         }
     }
@@ -146,6 +162,10 @@ bool B2C::EvaluateArgs() {
     if (is_hpp) { TargetPath += ".hpp"; }
     else { TargetPath += ".h"; }
 
+
+    GuardStr = StringToUpperCase(DataSetName);
+    GuardStr += "_ARRAY_INCLUDE";
+
     return true;
 }
 
@@ -162,6 +182,7 @@ void B2C::PrintUsage() {
     std::cout << "    -ps <N>: Set the progress printing steps. Print progress status after every N bytes" << std::endl;
     std::cout << "    -c : Output file will be compact (no spaces or new lines)" << std::endl;
     std::cout << "    -r <N> : Sets the number of elements in a row (for the data array)" << std::endl;
+    std::cout << "    -g : Add Include guard ('#pragme once' in hpp or 'ifndef' in h)" << std::endl;
 }
 void B2C::PrintState() {
     std::cout << std::endl << "Source File: " << SourcePath << std::endl;
@@ -207,6 +228,19 @@ bool B2C::Generate() {
     std::cout << "Wrinting [" << FileSize << "] bytes into array [" << DataSetName << "]...\n" << std::endl;
 
     // Add Header and stuff
+    if (is_IncludeGuard) {
+
+        if (is_hpp) {
+            // This case new line will be inserted even in compact mode - otherwise it will no work
+            OutFile << "#pragma once\n";
+        }
+        else {
+            // This case new line will be inserted even in compact mode - otherwise it will no work
+            OutFile << "#ifndef " << GuardStr << "\n";
+            OutFile << "#define " << GuardStr << "\n";
+        }
+    }
+
     OutFile << "const char " << DataSetName << "[" << FileSize << "] = {";
     if (!is_Compact) { OutFile << std::endl << "\t";}
 
@@ -275,6 +309,8 @@ bool B2C::Generate() {
     else {
         OutFile << "\n};\n\nconst size_t " << DataSetName << "_length = " << FileSize << ";";
     }
+
+    if (is_IncludeGuard && !is_hpp) { OutFile << "\n#endif // " << GuardStr; }
 
     // Done :D
     InFile.close();

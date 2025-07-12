@@ -32,10 +32,13 @@ protected:
     uint64_t ProgressStep = 3000000;
     bool is_Compact = false;
     uint32_t RowSize = 8;
+    bool is_IncludeGuard = false;
+    std::string GuardStr = "";
 
     std::string OutFileContent = "";
 
     std::string CharToHex(uint8_t IN_Value);
+    std::string StringToUpperCase(std::string& REF_String);
 
     void ParseArguments();
     bool EvaluateArgs();
