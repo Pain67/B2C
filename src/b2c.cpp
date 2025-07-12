@@ -304,10 +304,12 @@ bool B2C::Generate() {
 
     // Add Closing bracket and Array Size
     if (is_Compact) {
-        OutFile << "};const size_t " << DataSetName << "_length = " << FileSize << ";";
+        if (is_hpp) { OutFile << "};const unsigned long long " << DataSetName << "_length = " << FileSize << ";"; }
+        else { OutFile << "};const size_t " << DataSetName << "_length = " << FileSize << ";"; }
     }
     else {
-        OutFile << "\n};\n\nconst size_t " << DataSetName << "_length = " << FileSize << ";";
+        if (is_hpp) { OutFile << "\n};\n\nconst unsigned long long " << DataSetName << "_length = " << FileSize << ";"; }
+        else { OutFile << "\n};\n\nconst size_t " << DataSetName << "_length = " << FileSize << ";"; }
     }
 
     if (is_IncludeGuard && !is_hpp) { OutFile << "\n#endif // " << GuardStr; }
